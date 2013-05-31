@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+        html { height: 100% }
+        body { height: 100%; margin: 0; padding: 0 }
+        #map-canvas { height: 100% }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC7xc-PZrWTjtcwGR9nfL5QIjOVkw7yf3w&sensor=true"></script>
+    <script>
+        var polygon;
+        var map;
+        var markers = new Array();
+        function initialize() {
+
+            var utcnBaritiuLatlng = new google.maps.LatLng(46.772739,23.584894);
+            var mapOptions = {
+                zoom: 17,
+                center: utcnBaritiuLatlng,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            }
+            map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+            var marker = new google.maps.Marker({
+                position: utcnBaritiuLatlng,
+                map: map,
+                animation: google.maps.Animation.BOUNCE,
+                title: 'Hello UTCN!'
+            });
+
+            var utcnInfo = new google.maps.InfoWindow({
+                content: "<a href='http://cs.utcluj.ro'>Home</a>"
+            });
+            google.maps.event.addListener(marker, 'click', function () {
+                utcnInfo.open(map, marker);
+                marker.setAnimation(google.maps.Animation.DROP);
+            });
+
+            polygon = new google.maps.Polygon({
+                draggable: true,
+                editable: true
+            });
+            polygon.setMap(map);
+            google.maps.event.addListener(map, 'click', addVertex);
+            google.maps.event.addListener(polygon, 'dragend', changeMarkers);
+            google.maps.event.addListener(polygon.getPath(), 'set_at', moveVertexOnPath);
+        }
+        google.maps.event.addDomListener(window, 'load', initialize);
+
+        function addVertex(event) {
+            var path = polygon.getPath();
+            path.push(event.latLng);
+            var marker = new google.maps.Marker({
+                position: event.latLng,
+                title: 'No.' + path.getLength(),
+                map: map
+            });
+            markers.push(marker);
+        }
+
+        function changeMarkers(event) {
+            var path = polygon.getPath();
+            var len = path.getLength();
+            for(var i=0;i<len;i++) {
+                markers[i].setPosition(path.getAt(i));
+            }
+        }
+
+        function moveVertexOnPath(index, pos) {
+            markers[index].setPosition(pos);
+        }
+
+    </script>
+</head>
+<body>
+<div id="map-canvas" />
+</body>
+</html>
